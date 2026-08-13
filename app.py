@@ -1,4 +1,21 @@
 import os
+import sys
+from pathlib import Path
+
+# Load .env file FIRST before anything else
+from dotenv import load_dotenv
+
+# Get the directory where this script is located
+current_dir = Path(__file__).resolve().parent
+env_file = current_dir / '.env'
+
+# Try multiple ways to load .env
+if env_file.exists():
+    load_dotenv(dotenv_path=str(env_file), override=True)
+else:
+    # Fallback: try current working directory
+    load_dotenv(override=True)
+
 import streamlit as st
 # This brings in a tool called Streamlit that helps us create a website/app interface without needing to know web design. Think of it like a template builder.
 
@@ -8,17 +25,16 @@ from datetime import datetime
 from openai import OpenAI
 # This imports a tool that lets us connect to the AI service so we can ask it questions.
 
-from dotenv import load_dotenv
-# This imports a tool that reads secret information (like passwords/API keys) from a hidden file. It's like opening a safe to get your credentials.
-
-# Load OPENROUTER_API_KEY from .env
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '.env'))
-# This line actually opens that safe and loads all the secret information into memory so we can use it.
+# Verify that API key is loaded
+api_key = os.getenv("OPENROUTER_API_KEY")
+if not api_key:
+    st.error("❌ API Key not found! Please check your .env file.")
+    st.stop()
 
 # OpenRouter client — OpenAI-compatible, routes to 300+ models
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY"),
+    api_key=api_key,
 )
 # This creates a connection to OpenRouter (which forwards requests to the AI model).
 
